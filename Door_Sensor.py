@@ -3,7 +3,7 @@ import time
 
 GPIO.setmode(GPIO.BOARD)
 
-door_sensor_pin = 12
+door_sensor_pin = 36
 
 GPIO.setup(door_sensor_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 

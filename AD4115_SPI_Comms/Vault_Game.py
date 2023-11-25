@@ -8,25 +8,26 @@ import spidev
 
 import RPi.GPIO as GPIO
 import time
+import datetime
+
 
 from pydub import AudioSegment
 from pydub.playback import play, _play_with_simpleaudio
+import simpleaudio
 
 #-----------------------------------------------------------------------
 # GPIO and Sound Setup
 
-#start = AudioSegment.from_wav("/home/strimble/Documents/GIT/TheVaultBTYSE/Audio/3-2-1_GO.wav")
-#mission_impossible = AudioSegment.from_mp3("/home/strimble/Documents/GIT/TheVaultBTYSE/Audio/Mission Impossible Themefull theme.mp3")
+#start = AudioSegment.from_wav("/home/vault/Documents/GIT/TheVaultBTYSE/Audio/3-2-1_GO.wav")
+mission_impossible = AudioSegment.from_mp3("/home/vault/TheVaultBTYSE/Audio/Mission Impossible Themefull theme.mp3")
 
 GPIO.setmode(GPIO.BOARD)
 
 door_sensor1_pin = 37
-door_sensor2_pin = 36
 
 button_pin = 12
 
 GPIO.setup(door_sensor1_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.setup(door_sensor2_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(button_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 #------------------------------------------------------------------------
 # SPI and ADC Setup
@@ -87,7 +88,8 @@ else:
 #-------------------------------------------------------------------------------------------------
 # Disable un-connected receiver channels
 receiver_connected = [1]*16
-on_threshold = 300000
+on_threshold = 200000
+
 for i in range (100):
     adc_spi.GPIO3_LO(spi)
     adc_spi.GPIO3_HI(spi)
@@ -102,20 +104,17 @@ for i in range (100):
         if val < on_threshold:
             adc_spi.write_adc(spi,register_map['CH{0}'.format(response[4])],0x0)# Disable Channel
             receiver_connected[response[4]] = 0
+            
 #--------------------------------------------------------------------------------------------------
 # Ensure doors are closed before Start Button can be pressed
 while True:
     door1_status = GPIO.input(door_sensor1_pin)
-    door2_status = GPIO.input(door_sensor2_pin)
     button_status = GPIO.input(button_pin)
     if door1_status == 1:
-        print('Door 1 Open')
+        print('Exit Door Open')
         time.sleep(1)
-    elif door2_status == 1:
-        print('Door 2 Open')
-        time.sleep(1)
-    elif door1_status == 0 and door2_status == 0 and button_status == 0:
-        #playback = _play_with_simpleaudio(start)
+    elif door1_status == 0 and button_status == 0:
+        playback = _play_with_simpleaudio(mission_impossible)
         print('GAME START')
         break
 #--------------------------------------------------------------------------------------------------
@@ -124,13 +123,17 @@ adc_data = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 adc_diff = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 timer = 0
 penalty = 0
-threshold = -50000
+threshold = -75000
 laser_break = 0
+last_seconds = 0
 while True:
     start = time.time()
-    print(timer)
-    door2_status = GPIO.input(door_sensor2_pin)
-    if door2_status == 1:
+    minutes,seconds = divmod(timer, 60)
+    if int(seconds) != int(last_seconds):
+        print("%02d:%02d"% (minutes,seconds))
+        last_seconds = int(seconds)
+    door1_status = GPIO.input(door_sensor1_pin)
+    if door1_status == 1:
         print('Game Complete')
         break
     adc_spi.GPIO3_LO(spi)
@@ -158,6 +161,10 @@ while True:
     timer = timer+(end-start)+penalty
     
 print("number of lasers tripped = ", laser_break)
+print("Channels Connected = ", receiver_connected.count(1))
+
+sleep(5)
+playback.stop()
 
 plt.figure(1)
 plt.plot(adc_diff[0])
