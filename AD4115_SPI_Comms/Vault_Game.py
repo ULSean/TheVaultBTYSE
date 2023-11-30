@@ -20,7 +20,7 @@ from pydub import AudioSegment
 from pydub.playback import play, _play_with_simpleaudio
 
 
-def gameplay_gui(self):
+def gameplay_gui():
     """
     This function creates all of the elements of the Kinetic Tower GUI
     It runs in a Thead and stays in sync with the main game code using the games
@@ -48,7 +48,7 @@ def gameplay_gui(self):
                 try:
                     if ONLINE_MODE is True:
                         print("Attempting to get top 10")
-                        leaderboard_list = self.score_client.get_top_10()
+                        leaderboard_list = score_client.get_top_10()
                         if leaderboard_list is not None:
                     
                             print(str(leaderboard_list))
