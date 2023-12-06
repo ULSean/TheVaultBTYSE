@@ -31,7 +31,7 @@ GET_INPUT = 1
 IN_GAME = 2
 RESULTS = 3
 
-display_time = "00:00"
+display_time = "00.00"
 receiver_connected = []
 door_status = "Open"
 game_status = STANDBY
@@ -53,9 +53,11 @@ def gameplay_gui():
     width = 1920
     height = 1080
     screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
-    dialogue_font = pygame.font.Font('assets/research_remix.ttf', 50)    
+    dialogue_font = pygame.font.Font('assets/research_remix.ttf', 70)
+    game_text_font = pygame.font.Font('assets/research_remix.ttf', 70)
+    game_score_font = pygame.font.Font('assets/research_remix.ttf', 150)
     small_font = pygame.font.Font('assets/research_remix.ttf', 10)
-    score_font = pygame.font.Font('assets/research_remix.ttf', 100)
+    score_font = pygame.font.Font('assets/research_remix.ttf',50)
     adi_logo = pygame.image.load('assets/ADI_logo.png').convert()
     adi_logo = pygame.transform.scale(adi_logo, (240,136))
     adi_logo_rect = adi_logo.get_rect(topleft=(25,25))
@@ -117,9 +119,29 @@ def gameplay_gui():
                             screen.blit(adi_logo, adi_logo_rect)
                             screen.blits(header_blit_list)
                             screen.blits(score_blit_list)
+
+                            connected_laser_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
+                            connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-100, int(height)-20))
+                            screen.blit(connected_laser_txt, connected_laser_txt_rect)
+                            
+                            door_status_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
+                            door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-270, int(height)-20))
+                            screen.blit(door_status_txt, door_status_txt_rect)
                             pygame.display.update()
                             while game_status == STANDBY:
                                 # Can only close window from Standby
+                                screen.fill(color.BLACK)
+                                screen.blit(leaderboard_title, leaderboard_title_rect)
+                                # screen.blit(game_start_prompt, game_start_prompt_rect)
+                                
+                                screen.blit(adi_logo, adi_logo_rect)
+                                screen.blits(header_blit_list)
+                                screen.blits(score_blit_list)
+                                
+                                connected_laser_val = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
+                                screen.blit(connected_laser_val, connected_laser_txt_rect)
+                                door_closed_val = small_font.render("Exit Door " + door_status, True, color.WHITE)
+                                screen.blit(door_closed_val, door_status_txt_rect)
                                 for event in pygame.event.get():
                                     if event.type == pygame.QUIT:
                                         pygame.display.quit()
@@ -133,10 +155,11 @@ def gameplay_gui():
                                         pygame.display.toggle_fullscreen()
                                     elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                                         print("Entering game with keyboard input")
-                                        game.update_game_status(IN_GAME)
+                                        game_status = IN_GAME
                                 screen.blit(blink_surface, game_start_prompt_rect)
                                 pygame.display.update()
-                                clock.tick(60)
+                                #clock.tick(60)
+                                sleep(0.2)
                                 
                     else:
                         raise ConnectionError("Run Offline mode")
@@ -151,7 +174,7 @@ def gameplay_gui():
                     connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-100, int(height)-20))
                     screen.blit(connected_laser_txt, connected_laser_txt_rect)
                     
-                    door_status_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
+                    door_status_txt = small_font.render("Exit Door " + door_status, True, color.WHITE)
                     door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-270, int(height)-20))
                     screen.blit(door_status_txt, door_status_txt_rect)
                     
@@ -181,15 +204,15 @@ def gameplay_gui():
                     
             while game_status == IN_GAME:
                 
-                timer_txt = dialogue_font.render('Time', True, color.BLACK)
-                laser_break_txt = dialogue_font.render('Lasers Tripped', True, color.BLACK)
-                timer_score = score_font.render(str(display_time), True, color.BLACK)
-                laser_break_score = dialogue_font.render(str(int(laser_break)), True, color.BLACK)
+                timer_txt = game_text_font.render('Time', True, color.BLACK)
+                laser_break_txt = game_text_font.render('Lasers Tripped', True, color.BLACK)
+                timer_score = game_score_font.render(str(display_time), True, color.BLACK)
+                laser_break_score = game_score_font.render(str(int(laser_break)), True, color.BLACK)
                 
-                timer_txt_rect = timer_txt.get_rect(center=(int(width/4), int(height/2)))
-                laser_break_txt_rect = laser_break_txt.get_rect(center=(int(3*width/4), int(height/2)))
-                timer_score_rect = timer_score.get_rect(center=(int(width/4), int(height/2) + 100))
-                laser_break_rect = laser_break_score.get_rect(center=(int(3*width/4), int(height/2) +100))
+                timer_txt_rect = timer_txt.get_rect(center=(int(width/2), int(height/4)))
+                laser_break_txt_rect = laser_break_txt.get_rect(center=(int(width/2), int((height/4)*2.5)))
+                timer_score_rect = timer_score.get_rect(center=(int(width/2), int(height/4) + 130))
+                laser_break_rect = laser_break_score.get_rect(center=(int(width/2), int(height/4)*2.5 +130))
                 screen.fill(color.GREEN)
                 screen.blit( adi_logo, adi_logo_rect)
                 screen.blit(timer_txt, timer_txt_rect)
@@ -200,8 +223,8 @@ def gameplay_gui():
                 while game_status == IN_GAME:
                     screen.fill(color.GREEN)
                     #print(timer)
-                    timer_score = score_font.render(str(display_time), True, color.BLACK)
-                    laser_break_score = score_font.render(str(int(laser_break)), True, color.BLACK)
+                    timer_score = game_score_font.render(str(display_time), True, color.BLACK)
+                    laser_break_score = game_score_font.render(str(int(laser_break)), True, color.BLACK)
                     
                     screen.fill(color.GREEN)
                     screen.blit( adi_logo, adi_logo_rect)
@@ -223,17 +246,12 @@ def gameplay_gui():
                 results_title = dialogue_font.render('Results', True, results_color)
                 results_title_rect = results_title.get_rect(center=(int(width/2), 120))
                 results_color = next(color_pool)
-                winner_title = score_font.render("Winner!", True,results_color)
-                winner_title_rect = winner_title.get_rect(center=(int(width/3), int(height/4)))
-                winner_value = score_font.render(str(game.winner.player_ID), True, results_color)
-                winner_value_rect = winner_value.get_rect(center=(int(width/3), int(height/4)+50))
-                results_color = next(color_pool)
-                score_txt = score_font.render("Score (s)", True, results_color)
-                score_txt_rect = score_txt.get_rect(center=(int((2*width)/3), int(height/4)))
+                score_txt = dialogue_font.render("Score", True, results_color)
+                score_txt_rect = score_txt.get_rect(center=(int((width)/2), int(height/4)))
                     
-                score_value = score_font.render(f"{game.game_duration:8.2f}", True, results_color)
-                score_value_rect = score_value.get_rect(center=(int((2*width)/3), int(height/4)+50))
-                results_blits = [(results_title, results_title_rect), (winner_title, winner_title_rect), (winner_value, winner_value_rect), (score_txt, score_txt_rect), (score_value, score_value_rect) ]
+                score_value = game_score_font.render(display_time, True, results_color)
+                score_value_rect = score_value.get_rect(center=(int((width)/2), int(height/4)+130))
+                results_blits = [(results_title, results_title_rect), (score_txt, score_txt_rect), (score_value, score_value_rect) ]
                 
                 name_color = next(color_pool)
                 school_color = next(color_pool)
@@ -282,7 +300,7 @@ def gameplay_gui():
                                     print("GOT School name: ", input_entry_school.value)
                                     get_entry = 3
                                     try:
-                                        new_score = score_client.submit_score(entry_name=input_entry_name.value, school_name=input_entry_school.value, score=round(game.game_duration, 2))
+                                        new_score = score_client.submit_score(entry_name=input_entry_name.value, school_name=input_entry_school.value, score=float(display_time))
                                         time.sleep(0.5)
                                     except ConnectionError:
                                         print("Failed to submit score - continuing")
@@ -308,7 +326,7 @@ BLINK_EVENT = pygame.USEREVENT + 0
 timer = 0
 laser_break = 0
 
-score_client = ScoreClient(game_name="Vault", client_ip="192.0.0.1", host_ip="192.0.0.1")
+score_client = ScoreClient(game_name="Vault", client_ip="192.168.176.33", host_ip="192.168.176.210")
 
 gui_thread = threading.Thread(target=gameplay_gui)
 
@@ -441,7 +459,7 @@ while True:
     while True:
         start = time.time()
         minutes,seconds = divmod(timer, 60)
-        display_time = ("%02d:%02d"% (minutes,seconds))
+        display_time = ("%02d.%02d"% (minutes,seconds))
         if int(seconds) != int(last_seconds):
             #print("%02d:%02d"% (minutes,seconds))
             last_seconds = int(seconds)
@@ -481,7 +499,7 @@ while True:
         sleep(0.1)
     playback.stop()
     sleep(1)
-    game_status = STANDBY
+    game_status = RESULTS
 
 # plt.figure(1)
 # plt.plot(adc_diff[0])

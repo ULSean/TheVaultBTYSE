@@ -133,19 +133,26 @@ class ScoreClient:
                 # Expecting 1024 bytes back from server
                 
                 # Get header data from server
-                top_10_header = s.recv(1024)
+                top_10_header = s.recv(29)
+                print(len(top_10_header))
                 header_xml = top_10_header.decode().strip()
+                # print(header_xml)
                 clean_header = header_xml.replace("{\"s\":\"Normal\",\"len\":", "")
-                header_length = clean_header.replace("}", "")
-                print("Bytes to get in 10 TOP: ", int(header_length))
+                # print(f"Clean header {clean_header}")
+                header_length_list = clean_header.split("}")
+                header_length = header_length_list[0]
+                # print(header_length)
+                header_length_int = int(header_length)
+                # print(f"int? {header_length_int}")
+                print("Bytes to get in 10 TOP: ", header_length_int)
 
                 # Get data from server
-                top_10_bytes = s.recv(int(header_length))
+                top_10_bytes = s.recv(header_length_int)
                 print("Bytes Recieved in 1st req: ", len(top_10_bytes))
 
                 # Make sure all data is collected - keep collecting data until expected amount has been retrived
-                while len(top_10_bytes) != int(header_length):
-                    recv_more = s.recv(int(header_length))
+                while len(top_10_bytes) != header_length_int:
+                    recv_more = s.recv(header_length_int)
                     top_10_bytes = top_10_bytes + recv_more
                 
                 # Parse XML
@@ -159,6 +166,7 @@ class ScoreClient:
 
         # If not all data is collected try again until try limit is met
         except Exception as e:
+            print(e)
             # attempt_limit allows you to change how many retires are made
             attempt_limit = 1
             if self.attempt_num < attempt_limit:
