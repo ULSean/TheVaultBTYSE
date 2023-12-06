@@ -56,7 +56,7 @@ def gameplay_gui():
     dialogue_font = pygame.font.Font('assets/research_remix.ttf', 70)
     game_text_font = pygame.font.Font('assets/research_remix.ttf', 70)
     game_score_font = pygame.font.Font('assets/research_remix.ttf', 150)
-    small_font = pygame.font.Font('assets/research_remix.ttf', 10)
+    small_font = pygame.font.Font('assets/research_remix.ttf', 20)
     score_font = pygame.font.Font('assets/research_remix.ttf',50)
     adi_logo = pygame.image.load('assets/ADI_logo.png').convert()
     adi_logo = pygame.transform.scale(adi_logo, (240,136))
@@ -121,11 +121,11 @@ def gameplay_gui():
                             screen.blits(score_blit_list)
 
                             connected_laser_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
-                            connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-100, int(height)-20))
+                            connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-300, int(height)-20))
                             screen.blit(connected_laser_txt, connected_laser_txt_rect)
                             
                             door_status_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
-                            door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-270, int(height)-20))
+                            door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-600, int(height)-20))
                             screen.blit(door_status_txt, door_status_txt_rect)
                             pygame.display.update()
                             while game_status == STANDBY:
