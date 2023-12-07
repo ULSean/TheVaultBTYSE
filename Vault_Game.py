@@ -171,11 +171,11 @@ def gameplay_gui():
                     screen.fill(color.BLACK)
                     
                     connected_laser_txt = small_font.render('Lasers Connected = '+str(receiver_connected.count(1)), True, color.WHITE)
-                    connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-100, int(height)-20))
+                    connected_laser_txt_rect = connected_laser_txt.get_rect(center=(int(width)-300, int(height)-20))
                     screen.blit(connected_laser_txt, connected_laser_txt_rect)
                     
                     door_status_txt = small_font.render("Exit Door " + door_status, True, color.WHITE)
-                    door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-270, int(height)-20))
+                    door_status_txt_rect = connected_laser_txt.get_rect(center=(int(width)-600, int(height)-20))
                     screen.blit(door_status_txt, door_status_txt_rect)
                     
                     screen.blit(leaderboard_title, leaderboard_title_rect)
@@ -494,11 +494,11 @@ while True:
         
     print("number of lasers tripped = ", laser_break)
 
-    for i in range(100,1,-1):
-        m.setvolume(i)
-        sleep(0.1)
+#     for i in range(100,1,-1):
+#         m.setvolume(i)
+#         sleep(0.1)
     playback.stop()
-    sleep(1)
+    sleep(5)
     game_status = RESULTS
 
 # plt.figure(1)
