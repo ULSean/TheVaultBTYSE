@@ -26,6 +26,10 @@ from itertools import cycle
 import threading
 import alsaaudio
 
+import random
+
+RED = (255, 0, 0)
+
 STANDBY = 0
 GET_INPUT = 1
 IN_GAME = 2
@@ -36,9 +40,12 @@ receiver_connected = []
 door_status = "Open"
 game_status = STANDBY
 
+def draw_glowing_line(surface, color, start, end, width):
+    pygame.draw.line(surface, color, start, end, width)
+
 def gameplay_gui():
     """
-    This function creates all of the elements of the Kinetic Tower GUI
+    This function creates all of the elements of the Vault GUI
     It runs in a Thead and stays in sync with the main game code using the games
     game_status 
     """
@@ -48,11 +55,16 @@ def gameplay_gui():
     global laser_break
     global receiver_connected
     global door_status
+    global screen_height
+    global screen_width
+    global lines
     ONLINE_MODE = True
     pygame.init()
     width = 1920
     height = 1080
     screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
+    screen_height = screen.get_height()
+    screen_width = screen.get_width()
     dialogue_font = pygame.font.Font('assets/research_remix.ttf', 70)
     game_text_font = pygame.font.Font('assets/research_remix.ttf', 70)
     game_score_font = pygame.font.Font('assets/research_remix.ttf', 150)
@@ -204,16 +216,16 @@ def gameplay_gui():
                     
             while game_status == IN_GAME:
                 
-                timer_txt = game_text_font.render('Time', True, color.BLACK)
-                laser_break_txt = game_text_font.render('Lasers Tripped', True, color.BLACK)
-                timer_score = game_score_font.render(str(display_time), True, color.BLACK)
-                laser_break_score = game_score_font.render(str(int(laser_break)), True, color.BLACK)
+                timer_txt = game_text_font.render('Time', True, color.WHITE)
+                laser_break_txt = game_text_font.render('Lasers Tripped', True, color.WHITE)
+                timer_score = game_score_font.render(str(display_time), True, color.WHITE)
+                laser_break_score = game_score_font.render(str(int(laser_break)), True, color.WHITE)
                 
                 timer_txt_rect = timer_txt.get_rect(center=(int(width/2), int(height/4)))
                 laser_break_txt_rect = laser_break_txt.get_rect(center=(int(width/2), int((height/4)*2.5)))
                 timer_score_rect = timer_score.get_rect(center=(int(width/2), int(height/4) + 130))
                 laser_break_rect = laser_break_score.get_rect(center=(int(width/2), int(height/4)*2.5 +130))
-                screen.fill(color.GREEN)
+                screen.fill(color.BLACK)
                 screen.blit( adi_logo, adi_logo_rect)
                 screen.blit(timer_txt, timer_txt_rect)
                 screen.blit(laser_break_txt, laser_break_txt_rect)
@@ -221,12 +233,14 @@ def gameplay_gui():
 
                 pygame.display.update()
                 while game_status == IN_GAME:
-                    screen.fill(color.GREEN)
+                    screen.fill(color.BLACK)
                     #print(timer)
-                    timer_score = game_score_font.render(str(display_time), True, color.BLACK)
-                    laser_break_score = game_score_font.render(str(int(laser_break)), True, color.BLACK)
+                    timer_score = game_score_font.render(str(display_time), True, color.WHITE)
+                    laser_break_score = game_score_font.render(str(int(laser_break)), True, color.WHITE)
                     
-                    screen.fill(color.GREEN)
+                    screen.fill(color.BLACK)
+                    for line in lines:
+                        draw_glowing_line(screen, RED, line[:2], line[2:],5)
                     screen.blit( adi_logo, adi_logo_rect)
                     screen.blit(timer_txt, timer_txt_rect)
                     screen.blit(laser_break_txt, laser_break_txt_rect)
@@ -326,7 +340,7 @@ BLINK_EVENT = pygame.USEREVENT + 0
 timer = 0
 laser_break = 0
 
-score_client = ScoreClient(game_name="Vault", client_ip="192.168.176.33", host_ip="192.168.176.210")
+score_client = ScoreClient(game_name="Vault", client_ip="127.0.0.1", host_ip="169.254.10.90")
 
 gui_thread = threading.Thread(target=gameplay_gui)
 
@@ -354,6 +368,7 @@ GPIO.setup(button_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 #------------------------------------------------------------------------
 # SPI and ADC Setup
 spi = adc_spi.spi_open()
+top_10 = [10000]*10 # top 10 with 10 scores of 100
 while True:
     m = alsaaudio.Mixer()
     m.setvolume(100)
@@ -455,6 +470,7 @@ while True:
     threshold = -75000
     laser_break = 0
     last_seconds = 0
+    lines = []
 
     while True:
         start = time.time()
@@ -487,19 +503,33 @@ while True:
                     penalty = 10
                     laser_break = laser_break + 1
                     playback1 = _play_with_simpleaudio(laser_pew)
+                    x1 = random.randint(0, screen_width)
+                    y1 = 0
+                    x2 = random.randint(0, screen_width)
+                    y2 = screen_height
+                    lines.append((x1,y1,x2,y2))
                 else:
                     penalty = 0
         end = time.time()
         timer = timer+(end-start)+penalty
         
     print("number of lasers tripped = ", laser_break)
-
+    
 #     for i in range(100,1,-1):
 #         m.setvolume(i)
 #         sleep(0.1)
     playback.stop()
-    sleep(5)
-    game_status = RESULTS
+    sleep(8)
+    print(timer)
+    print(top_10)
+    if timer < top_10[-1]:
+        print("new score")
+        top_10[-1] = timer
+        top_10.sort()
+        game_status = RESULTS
+        
+    else:
+        game_status = STANDBY
 
 # plt.figure(1)
 # plt.plot(adc_diff[0])
