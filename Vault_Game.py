@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/vault/TheVaultBTYSE/AD4115_SPI_Comms")
+sys.path.append("/home/strimble/TheVaultBTYSE/AD4115_SPI_Comms")
 import AD4115_SPI_Driver as adc_spi
 from AD4115_SPI_Driver import register_map
 from time import sleep
@@ -340,7 +340,7 @@ BLINK_EVENT = pygame.USEREVENT + 0
 timer = 0
 laser_break = 0
 
-score_client = ScoreClient(game_name="Vault", client_ip="127.0.0.1", host_ip="169.254.10.90")
+score_client = ScoreClient(game_name="Vault", client_ip="169.254.75.231", host_ip="169.254.211.56")
 
 gui_thread = threading.Thread(target=gameplay_gui)
 
@@ -353,8 +353,8 @@ gui_thread = threading.Thread(target=gameplay_gui)
 
 #start = AudioSegment.from_wav("/home/vault/Documents/GIT/TheVaultBTYSE/Audio/3-2-1_GO.wav")
 print("Loading Audio....")
-mission_impossible = AudioSegment.from_mp3("/home/vault/TheVaultBTYSE/Audio/Mission Impossible Themefull theme.mp3")
-laser_pew = AudioSegment.from_mp3("/home/vault/TheVaultBTYSE/Audio/Laser Sound Effect.mp3")
+mission_impossible = AudioSegment.from_mp3("/home/strimble/TheVaultBTYSE/Audio/Mission Impossible Themefull theme.mp3")
+laser_pew = AudioSegment.from_mp3("/home/strimble/TheVaultBTYSE/Audio/Laser Sound Effect.mp3")
 
 gui_thread.start()
 GPIO.setmode(GPIO.BOARD)
@@ -368,7 +368,7 @@ GPIO.setup(button_pin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 #------------------------------------------------------------------------
 # SPI and ADC Setup
 spi = adc_spi.spi_open()
-top_10 = [10000]*10 # top 10 with 10 scores of 100
+
 while True:
     m = alsaaudio.Mixer()
     m.setvolume(100)
@@ -519,15 +519,12 @@ while True:
 #         m.setvolume(i)
 #         sleep(0.1)
     playback.stop()
-    sleep(8)
+    sleep(5)
     print(timer)
-    print(top_10)
-    if timer < top_10[-1]:
+    leaderboard_list = score_client.get_top_10()
+    if float(timer) < (float(leaderboard_list[-1]["@Score"])*100):
         print("new score")
-        top_10[-1] = timer
-        top_10.sort()
         game_status = RESULTS
-        
     else:
         game_status = STANDBY
 
