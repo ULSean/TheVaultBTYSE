@@ -340,18 +340,15 @@ BLINK_EVENT = pygame.USEREVENT + 0
 timer = 0
 laser_break = 0
 
-score_client = ScoreClient(game_name="Vault", client_ip="169.254.75.231", host_ip="169.254.211.56")
+# update to match leaderboard IP(host) and client IP (PIs IP address)
+score_client = ScoreClient(game_name="Vault", client_ip="169.254.75.231", host_ip="169.254.211.56")# update to match leaderboard IP(host) and 
 
-gui_thread = threading.Thread(target=gameplay_gui)
-
-    # Start GUI thread outsde loop. Can only be started once
-
+gui_thread = threading.Thread(target=gameplay_gui)# Start GUI thread outsde loop. Can only be started once
 
 
 #-----------------------------------------------------------------------
 # GPIO and Sound Setup
 
-#start = AudioSegment.from_wav("/home/vault/Documents/GIT/TheVaultBTYSE/Audio/3-2-1_GO.wav")
 print("Loading Audio....")
 mission_impossible = AudioSegment.from_mp3("/home/strimble/TheVaultBTYSE/Audio/Mission Impossible Themefull theme.mp3")
 laser_pew = AudioSegment.from_mp3("/home/strimble/TheVaultBTYSE/Audio/Laser Sound Effect.mp3")
@@ -514,17 +511,25 @@ while True:
         timer = timer+(end-start)+penalty
         
     print("number of lasers tripped = ", laser_break)
-    
-#     for i in range(100,1,-1):
-#         m.setvolume(i)
-#         sleep(0.1)
+
     playback.stop()
     sleep(5)
-    print(timer)
-    leaderboard_list = score_client.get_top_10()
-    if float(timer) < (float(leaderboard_list[-1]["@Score"])*100):
-        print("new score")
-        game_status = RESULTS
+    print("timer",timer)
+    online = True
+    if online == True:
+        leaderboard_list = score_client.get_top_10()
+        score_10 = float(leaderboard_list[-1]["@Score"])
+        score_ans = int(score_10) 
+        score_rem = (score_10 - score_ans) *100
+        score_ans = (score_ans *60) + score_rem
+        print("hello")
+        print("10TH", float(leaderboard_list[-1]["@Score"])*100)
+    
+        if float(timer) < score_ans:
+            print("new score")
+            game_status = RESULTS
+        else:
+            game_status = STANDBY
     else:
         game_status = STANDBY
 
@@ -568,7 +573,4 @@ while True:
 # plt.show()
 
 adc_spi.spi_close(spi)
-
-
-
 
